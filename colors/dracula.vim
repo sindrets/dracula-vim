@@ -86,11 +86,14 @@ if !exists('g:dracula_undercurl')
 endif
 
 if !exists('g:dracula_full_special_attrs_support')
+  let s:term = getenv("TERM")
   let g:dracula_full_special_attrs_support = has('gui_running')
+        \ || s:term ==# "xterm-kitty"
+        \ || s:term ==# "wezterm"
 endif
 
 if !exists('g:dracula_inverse')
-  let g:dracula_inverse = 1
+  let g:dracula_inverse = 0
 endif
 
 if !exists('g:dracula_colorterm')
@@ -192,7 +195,7 @@ call s:h('DraculaWarnLine', s:none, s:none, [s:attrs.undercurl], s:orange)
 call s:h('DraculaInfoLine', s:none, s:none, [s:attrs.undercurl], s:cyan)
 
 call s:h('DraculaTodo', s:cyan, s:none, [s:attrs.bold, s:attrs.inverse])
-call s:h('DraculaSearch', s:green, s:none, [s:attrs.inverse])
+call s:h('DraculaSearch', s:bgdarker, s:purple, [s:attrs.inverse])
 call s:h('DraculaBoundary', s:comment, s:bgdark)
 call s:h('DraculaWinSeparator', s:comment, s:bgdark)
 call s:h('DraculaLink', s:cyan, s:none, [s:attrs.underline])
@@ -227,7 +230,7 @@ hi! link DiffDelete   DraculaDiffDelete
 hi! link DiffRemoved  DiffDelete
 hi! link DiffText     DraculaDiffText
 hi! link Directory    DraculaPurpleBold
-hi! link ErrorMsg     DraculaRedInverse
+hi! link ErrorMsg     DraculaRed
 hi! link FoldColumn   DraculaSubtle
 hi! link Folded       DraculaBoundary
 hi! link IncSearch    DraculaOrangeInverse
@@ -241,14 +244,15 @@ hi! link PmenuThumb   DraculaSelection
 hi! link Question     DraculaFgBold
 hi! link Search       DraculaSearch
 call s:h('SignColumn', s:comment)
+call s:h('EndOfBuffer', ["bg", "bg"], ["bg", "bg"])
 hi! link TabLine      DraculaBoundary
 hi! link TabLineFill  DraculaBgDark
-hi! link TabLineSel   Normal
+hi! link TabLineSel   DraculaPink
 hi! link Title        DraculaGreenBold
 hi! link VertSplit    DraculaWinSeparator
 hi! link Visual       DraculaSelection
 hi! link VisualNOS    Visual
-hi! link WarningMsg   DraculaOrangeInverse
+hi! link WarningMsg   DraculaOrange
 
 " }}}
 " Syntax: {{{
@@ -338,5 +342,143 @@ hi! link helpExample DraculaGreen
 hi! link helpBacktick Special
 
 "}}}
+" Plugins: {{{
+
+" Fzf: {{{
+if exists('g:loaded_fzf') && ! exists('g:fzf_colors')
+  let g:fzf_colors = {
+    \ 'fg':      ['fg', 'Normal'],
+    \ 'bg':      ['bg', 'Normal'],
+    \ 'hl':      ['fg', 'Search'],
+    \ 'fg+':     ['fg', 'Normal'],
+    \ 'bg+':     ['bg', 'Normal'],
+    \ 'hl+':     ['fg', 'DraculaOrange'],
+    \ 'info':    ['fg', 'DraculaPurple'],
+    \ 'border':  ['fg', 'Ignore'],
+    \ 'prompt':  ['fg', 'DraculaGreen'],
+    \ 'pointer': ['fg', 'Exception'],
+    \ 'marker':  ['fg', 'Keyword'],
+    \ 'spinner': ['fg', 'Label'],
+    \ 'header':  ['fg', 'Comment'],
+    \}
+endif
+"}}}
+" ALE: {{{
+if exists('g:ale_enabled')
+  hi! link ALEError              DraculaErrorLine
+  hi! link ALEWarning            DraculaWarnLine
+  hi! link ALEInfo               DraculaInfoLine
+
+  hi! link ALEErrorSign          DraculaRed
+  hi! link ALEWarningSign        DraculaOrange
+  hi! link ALEInfoSign           DraculaCyan
+
+  hi! link ALEVirtualTextError   Comment
+  hi! link ALEVirtualTextWarning Comment
+endif
+" }}}
+" CtrlP: {{{
+if exists('g:loaded_ctrlp')
+  hi! link CtrlPMatch     IncSearch
+  hi! link CtrlPBufferHid Normal
+endif
+" }}}
+" GitGutter / gitsigns: {{{
+if exists('g:loaded_gitgutter')
+  hi! link GitGutterAdd    DiffAdd
+  hi! link GitGutterChange DiffChange
+  hi! link GitGutterDelete DiffDelete
+endif
+if has('nvim-0.5') && luaeval("pcall(require, 'gitsigns')")
+  " https://github.com/lewis6991/gitsigns.nvim requires nvim > 0.5
+  " has('nvim-0.5') checks >= 0.5, so this should be future-proof.
+  hi! link GitSignsAdd      DiffAdd
+  hi! link GitSignsAddLn    DiffAdd
+  hi! link GitSignsAddNr    DiffAdd
+  hi! link GitSignsChange   DiffChange
+  hi! link GitSignsChangeLn DiffChange
+  hi! link GitSignsChangeNr DiffChange
+  hi! link GitSignsDelete   DiffDelete
+  hi! link GitSignsDeleteLn DiffDelete
+  hi! link GitSignsDeleteNr DiffDelete
+endif
+" }}}
+" Tree-sitter: {{{
+" The nvim-treesitter library defines many global highlight groups that are
+" linked to the regular vim syntax highlight groups. We only need to redefine
+" those highlight groups when the defaults do not match the dracula
+" specification.
+" https://github.com/nvim-treesitter/nvim-treesitter/blob/master/plugin/nvim-treesitter.vim
+" # Misc
+hi! link TSPunctSpecial Special
+" # Constants
+hi! link TSConstMacro Macro
+hi! link TSStringEscape Character
+hi! link TSSymbol DraculaPurple
+hi! link TSAnnotation DraculaYellow
+hi! link TSAttribute DraculaGreenItalic
+" # Functions
+hi! link TSFuncBuiltin DraculaCyan
+hi! link TSFuncMacro Function
+hi! link TSParameter DraculaOrangeItalic
+hi! link TSParameterReference DraculaOrange
+hi! link TSField DraculaOrange
+hi! link TSConstructor DraculaCyan
+" # Keywords
+hi! link TSLabel DraculaPurpleItalic
+" # Variable
+hi! link TSVariableBuiltin DraculaPurpleItalic
+" # Text
+hi! link TSStrong DraculaFgBold
+hi! link TSEmphasis DraculaFg
+hi! link TSUnderline Underlined
+hi! link TSTitle DraculaYellow
+hi! link TSLiteral DraculaYellow
+hi! link TSURI DraculaYellow
+" HTML and JSX tag attributes. By default, this group is linked to TSProperty,
+" which in turn links to Identifer (white).
+hi! link TSTagAttribute DraculaGreenItalic
+" }}}
+" nvim-cmp: {{{
+" A completion engine plugin for neovim written in Lua.
+" https://github.com/hrsh7th/nvim-cmp
+hi! link CmpItemAbbrDeprecated DraculaError
+
+hi! link CmpItemAbbrMatch DraculaCyan
+hi! link CmpItemAbbrMatchFuzzy DraculaCyan
+
+hi! link CmpItemKindText DraculaFg
+hi! link CmpItemKindMethod Function
+hi! link CmpItemKindFunction Function
+hi! link CmpItemKindConstructor DraculaCyan
+hi! link CmpItemKindField DraculaOrange
+hi! link CmpItemKindVariable DraculaPurpleItalic
+hi! link CmpItemKindClass DraculaCyan
+hi! link CmpItemKindInterface DraculaCyan
+hi! link CmpItemKindModule DraculaYellow
+hi! link CmpItemKindProperty DraculaPink
+hi! link CmpItemKindUnit DraculaFg
+hi! link CmpItemKindValue DraculaYellow
+hi! link CmpItemKindEnum DraculaPink
+hi! link CmpItemKindKeyword DraculaPink
+hi! link CmpItemKindSnippet DraculaFg
+hi! link CmpItemKindColor DraculaYellow
+hi! link CmpItemKindFile DraculaYellow
+hi! link CmpItemKindReference DraculaOrange
+hi! link CmpItemKindFolder DraculaYellow
+hi! link CmpItemKindEnumMember DraculaPurple
+hi! link CmpItemKindConstant DraculaPurple
+hi! link CmpItemKindStruct DraculaPink
+hi! link CmpItemKindEvent DraculaFg
+hi! link CmpItemKindOperator DraculaPink
+hi! link CmpItemKindTypeParameter DraculaCyan
+
+hi! link CmpItemMenu Comment
+" }}}
+" telescope.nvim: {{{
+hi! link TelescopeBorder DraculaPurple
+hi! link TelescopePromptPrefix DraculaOrange
+" }}}
+" }}}
 
 " vim: fdm=marker ts=2 sts=2 sw=2 fdl=0 et:
