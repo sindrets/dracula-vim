@@ -114,6 +114,8 @@ let s:attrs = {
 function! s:h(scope, fg, ...) " bg, attr_list, special
   let l:fg = copy(a:fg)
   let l:bg = get(a:, 1, ['NONE', 'NONE'])
+  let l:fg = type(l:fg) == 3 ? l:fg : [ l:fg ]
+  let l:bg = type(l:bg) == 3 ? l:bg : [ l:bg ]
 
   let l:attr_list = filter(get(a:, 2, ['NONE']), 'type(v:val) == 1')
   let l:attrs = len(l:attr_list) > 0 ? join(l:attr_list, ',') : 'NONE'
@@ -126,6 +128,7 @@ function! s:h(scope, fg, ...) " bg, attr_list, special
   " the global variable `g:dracula_full_special_attrs_support` explicitly if the
   " default behavior is not desirable.
   let l:special = get(a:, 3, ['NONE', 'NONE'])
+  let l:special = type(l:special) == 3 ? l:special : [ l:special ]
   if l:special[0] !=# 'NONE' && l:fg[0] ==# 'NONE' && !g:dracula_full_special_attrs_support
     let l:fg[0] = l:special[0]
     let l:fg[1] = l:special[1]
@@ -133,8 +136,8 @@ function! s:h(scope, fg, ...) " bg, attr_list, special
 
   let l:hl_string = [
         \ 'highlight', a:scope,
-        \ 'guifg=' . l:fg[0], 'ctermfg=' . l:fg[1],
-        \ 'guibg=' . l:bg[0], 'ctermbg=' . l:bg[1],
+        \ 'guifg=' . l:fg[0], 'ctermfg=' . (len(l:fg) >= 2 ? l:fg[1] : 'NONE'),
+        \ 'guibg=' . l:bg[0], 'ctermbg=' . (len(l:bg) >= 2 ? l:bg[1] : 'NONE'),
         \ 'gui=' . l:attrs, 'cterm=' . l:attrs,
         \ 'guisp=' . l:special[0],
         \]
@@ -197,7 +200,7 @@ call s:h('DraculaInfoLine', s:none, s:none, [s:attrs.undercurl], s:cyan)
 call s:h('DraculaTodo', s:cyan, s:none, [s:attrs.bold, s:attrs.inverse])
 call s:h('DraculaSearch', s:bgdarker, s:purple, [s:attrs.inverse])
 call s:h('DraculaBoundary', s:comment, s:bgdark)
-call s:h('DraculaWinSeparator', s:comment, s:bgdark)
+call s:h('DraculaWinSeparator', '#74799c')
 call s:h('DraculaLink', s:cyan, s:none, [s:attrs.underline])
 
 call s:h('DraculaDiffChange', s:orange, s:none)
@@ -213,12 +216,15 @@ set background=dark
 
 " Required as some plugins will overwrite
 call s:h('Normal', s:fg, g:dracula_colorterm || has('gui_running') ? s:bg : s:none )
-call s:h('StatusLine', s:none, s:bglighter, [s:attrs.bold])
-call s:h('StatusLineNC', s:none, s:bglight)
-call s:h('StatusLineTerm', s:none, s:bglighter, [s:attrs.bold])
-call s:h('StatusLineTermNC', s:none, s:bglight)
+call s:h('StatusLine', '#6b7cb2', '#343746', [ s:attrs.bold ])
+call s:h('StatusLineNC', '#6b7cb2', '#343746')
+call s:h('StatusLineTerm', '#6b7cb2', '#343746', [ s:attrs.bold ])
+call s:h('StatusLineTermNC', '#6b7cb2', '#343746')
 call s:h('WildMenu', s:bg, s:purple, [s:attrs.bold])
-call s:h('CursorLine', s:none, s:subtle)
+call s:h('CursorLine', s:none, '#3b3e50')
+call s:h('Whitespace', '#4e5269')
+call s:h('NonText', '#4e5269')
+call s:h('Visual', s:none, '#313957')
 
 hi! link ColorColumn  DraculaBgDark
 hi! link CursorColumn CursorLine
@@ -236,7 +242,6 @@ hi! link Folded       DraculaBoundary
 hi! link IncSearch    DraculaOrangeInverse
 call s:h('LineNr', s:comment)
 hi! link MoreMsg      DraculaFgBold
-hi! link NonText      DraculaSubtle
 hi! link Pmenu        DraculaBgDark
 hi! link PmenuSbar    DraculaBgDark
 hi! link PmenuSel     DraculaSelection
@@ -250,7 +255,6 @@ hi! link TabLineFill  DraculaBgDark
 hi! link TabLineSel   DraculaPink
 hi! link Title        DraculaGreenBold
 hi! link VertSplit    DraculaWinSeparator
-hi! link Visual       DraculaSelection
 hi! link VisualNOS    Visual
 hi! link WarningMsg   DraculaOrange
 
